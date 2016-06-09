@@ -4,6 +4,7 @@ LDFLAGS=
 SOURCES=
 OBJECTS= -o
 B_FILES=bootLoader.bin kernelLoader.bin kernel.bin
+LINKED=kernel_linked
 OS=os.bin
 
 all: OS_3
@@ -17,9 +18,12 @@ kernelLoader.bin: kernelLoader.asm
 kernel.o: kernel.c
 	$(CC) $(CFLAGS) -o kernel.o kernel.c
 
-kernel.bin: kernel.o linker.ld
-	#ld -s -o kernel.bin -T linker.ld kernel.o
-	ld -e 0x40000 -s -o kernel.bin kernel.o
+$(LINKED): kernel.o linker.ld
+	ld -s -o $(LINKED) -T linker.ld kernel.o
+	#ld -e 0x40000 -s -o $(LINKED) kernel.o
+
+kernel.bin: $(LINKED)
+	objcopy -O binary $(LINKED) kernel.bin
 
 OS_1: bootLoader.bin 
 	cat bootLoader.bin > os.bin

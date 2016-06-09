@@ -3,20 +3,30 @@
 [bits	16]
 org	0x8000
 jmp	Entry16
-%include "func.asm"
+%include "func_16.asm"
 
-
-;Register GDT
 Entry16:
 	; Load Kernel
-	mov	ax, 1; Kernel size
+
+    ;Call ClearBackground
+
+
+    mov ax, 0
+    mov ds, ax
+    mov si, bootingMsg
+    Call PrintString
+
+
+
+	;mov	ax, 1; Kernel size
+	mov	ax, 2; Kernel size
 	mov	ebx, 0x40000000 ; Kernel address
 	mov	ecx, 2 ; Kernel start LBA
-	;call	ReadSectors
+	call	ReadSectors
 
 	xor	ax, ax
 	lgdt	[gdtr]
-	cli
+	cli         ; Disable interrupt
 
 	; Turn on 32-bit protected mode
 	mov	eax, cr0
@@ -27,7 +37,7 @@ Entry16:
 	nop
 	nop
 
-	jmp	codeDescripter:Entry32
+	jmp	codeDescriptor:Entry32
 
 ;************************
 ;	32-bit
@@ -36,7 +46,7 @@ Entry16:
 [bits	32]
 Entry32:
 	; initial segment register
-	mov	bx, dataDescripter
+	mov	bx, dataDescriptor
 	mov	ds, bx
 	mov	es, bx
 	mov	fs, bx
@@ -50,8 +60,8 @@ Entry32:
 	;mov	es, ax
 	;jmp 0x0
 	;jmp $
-	call	ClearBackground
-	jmp 0x40000
+
+	jmp codeDescriptor:0x40000
 	
 
 ;************************
@@ -64,37 +74,38 @@ gdtr:
 
 gdt:
 ;NULL descripter
-nullDestripter  equ 0x00
+nullDestriptor  equ 0x00
         dw 0
         dw 0
         db 0
         db 0
         db 0
         db 0
-;code descripter
-codeDescripter  equ 0x08
-        dw 0xFFFF
-        dw 0x0000
-        db 0x00
-        db 0x9A
-        db 0xCF
-        db 0x00
-dataDescripter  equ 0x10
-        dw 0xFFFF
-        dw 0x0000
-        db 0x00
-        db 0x92 ;10010010b
-        db 0xCF ;11001111b
-        db 0x00
-vedioDescripter equ 0x18
-        dw 0xFFFF
-        dw 0x8000
-        db 0x0B
-        db 0x92
-        db 0xCF
-        db 0x00
+codeDescriptor  equ 0x08
+    dw 0xFFFF               ; limit:0xFFFF
+    dw 0x0000               ; base 0~15 : 0
+    db 0x00                 ; base 16~23: 0
+    db 0x9A                 ; P:1, DPL:0, Code, non-conforming, readable
+    db 0xCF                 ; G:1, D:1, limit:0xF
+    db 0x00                 ; base 24~32: 0
+dataDescriptor  equ 0x10
+    dw 0xFFFF               ; limit 0xFFFF
+    dw 0x0000               ; base 0~15 : 0
+    db 0x00                 ; base 16~23: 0
+    db 0x92                 ; P:1, DPL:0, data, readable, writable
+    db 0xCF                 ; G:1, D:1, limit:0xF
+    db 0x00                 ; base 24~32: 0
+videoDescriptor equ 0x18
+    dw 0xFFFF               ; limit 0xFFFF
+    dw 0x8000               ; base 0~15 : 0x8000
+    db 0x0B                 ; base 16~23: 0x0B
+    db 0x92                 ; P:1, DPL:0, data, readable, writable
+    db 0xCF                 ; G:1, D:1, limit:0xF
+    db 0x00                 ; base 24~32: 0
 
 gdt_end:
+
+bootingMsg db "Now Booting..", 0
 
 ;gdt_codeSeg equ (codeDescripter - gdt)
 ;gdt_dataSeg equ dataDescripter - gdt
