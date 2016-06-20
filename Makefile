@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -c -masm=intel 
+CFLAGS= -c -O0 -masm=intel -m32 
 LDFLAGS=
 SOURCES=
 OBJECTS= -o
@@ -17,15 +17,20 @@ kernelLoader.bin: kernelLoader.asm
 kernel.o: kernel.c
 	$(CC) $(CFLAGS) -o kernel.o kernel.c
 
-kernel.bin: kernel.o linker.ld
-	#ld -s -o kernel.bin -T linker.ld kernel.o
-	ld -e 0x40000 -s -o kernel.bin kernel.o
+linked_kernel: kernel.o linker.ld
+	ld -m elf_i386 -e 0x40000 -s -o linked_kernel kernel.o
+
+kernel.bin: linked_kernel
+	objcopy -O binary linked_kernel kernel.bin
+
+extend_file: extend_file.sh
+	sh extend_file.sh
 
 OS_1: bootLoader.bin 
 	cat bootLoader.bin > os.bin
 OS_2: OS_1 kernelLoader.bin $(OS)
 	cat kernelLoader.bin >> os.bin
-OS_3: OS_2 kernel.bin $(OS)
+OS_3: OS_2 kernel.bin $(OS) extend_file
 	cat kernel.bin >> os.bin
 
 clean:

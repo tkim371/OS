@@ -1,4 +1,5 @@
 ;Bootloader, bootsect.asm
+[bits	16]
 org	0x7C00
 jmp Entry
 %include "func_16.asm"

@@ -18,8 +18,7 @@ Entry16:
 
 
 
-	;mov	ax, 1; Kernel size
-	mov	ax, 2; Kernel size
+	mov	ax, 1; Kernel size
 	mov	ebx, 0x40000000 ; Kernel address
 	mov	ecx, 2 ; Kernel start LBA
 	call	ReadSectors
