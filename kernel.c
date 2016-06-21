@@ -1,29 +1,41 @@
+#define MAX_SCREEN (80*25*2)
+
+int clear_screen();
+int printk(char* string);
+
 int main(void) {
 
-asm(".intel_syntax noprefix");
-	char *video = (char*)0xB8000;
+	asm(".intel_syntax noprefix");
 	char *string = "Hello World!";
-	int i = 0;
-    int max_background = 80*25*2;
 
-
-    for(i = 0; i < max_background; i++) {
-        *(video+i) = 0;
-    }
-
-/*
-	for(i = 0; string[i] != 0; i++) {
-		//*(video+i) = string[i];
-		//*(video+i*2) = 0x09;
-		//*(video+i*2) = string[i];
-		*video++ = string[i];
-		*video++ = 0x09;
-	}
-*/
+	clear_screen();
+	printk(string);
 	asm
 	(
-		"jmp $\n\t"
 		"jmp $\n\t"
 	);
 	return 0;
 }
+
+int clear_screen() {
+	int i = 0;
+	volatile char *video = (char*)0xB8000;
+
+	for(i = 0; i < MAX_SCREEN; i++) {
+		*(video++) = 0;
+	}
+}
+
+int printk(char* string) {
+	volatile char *video = (char*)0xB8000;
+
+	int len = 0;
+
+	for(len = 0; string[len] != 0; len++) {
+		*video++ = string[len];
+		*video++ = 0x09;
+	}
+
+	return len;
+}
+

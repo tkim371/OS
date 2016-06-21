@@ -6,25 +6,23 @@ jmp	Entry16
 %include "func_16.asm"
 
 Entry16:
+
 	; Load Kernel
 
     ;Call ClearBackground
-
-
     mov ax, 0
     mov ds, ax
     mov si, bootingMsg
     Call PrintString
 
-
-
+	; TODO: change parameter according to the actual file size
 	mov	ax, 1; Kernel size
 	mov	ebx, 0x40000000 ; Kernel address
 	mov	ecx, 2 ; Kernel start LBA
 	call	ReadSectors
 
 	xor	ax, ax
-	lgdt	[gdtr]
+	lgdt	[gdtr]	; Load gdt
 	cli         ; Disable interrupt
 
 	; Turn on 32-bit protected mode
@@ -53,12 +51,6 @@ Entry32:
 	mov	ss, bx
 	xor	esp, esp
 	mov	esp, 0x9FFFF
-
-	; es <- videoDescripter
-	;mov	ax, 0x18
-	;mov	es, ax
-	;jmp 0x0
-	;jmp $
 
 	jmp codeDescriptor:0x40000
 	
