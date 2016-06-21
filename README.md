@@ -3,7 +3,8 @@
 ## Progress
 - Roughly finished bootLoader and kernelLoader
 - kernelLoader can load C kernel into memory
-- C kernel clears background and prints "Hello World"
+- C kernel clears background and prints "Hello World" 
+
 ## Build
 ```
 $ make
